@@ -192,12 +192,7 @@ body {
 }
 
 .icon-item:hover {
-  background: #000000;
-  color: #ffffff;
-}
-
-.icon-item:hover .icon-svg svg {
-  color: #ffffff;
+  background: #e8fdff;
 }
 
 .icon-svg {
