@@ -37,7 +37,7 @@ A modern, fast, and responsive web application for browsing, searching, and mana
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/mixxicon.git
+   git clone https://github.com/yngpiu/mixxicon.git
    cd mixxicon
    ```
 
@@ -149,9 +149,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report a Bug](https://github.com/yourusername/mixxicon/issues)
-- 💡 [Request a Feature](https://github.com/yourusername/mixxicon/issues)
-- 💬 [Discussions](https://github.com/yourusername/mixxicon/discussions)
+- 🐛 [Report a Bug](https://github.com/yngpiu/mixxicon/issues)
+- 💡 [Request a Feature](https://github.com/yngpiu/mixxicon/issues)
+- 💬 [Discussions](https://github.com/yngpiu/mixxicon/discussions)
 
 ## 📈 Roadmap
 
