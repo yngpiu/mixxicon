@@ -101,11 +101,9 @@ const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // Calculate how many items per row based on container width
-  const ITEM_WIDTH = 120; // Exact width of each icon item
-  const ITEM_HEIGHT = 120; // Same as width for square items
-
+  // Simple calculation with fixed assumptions for virtualization
   const [containerWidth, setContainerWidth] = useState(1400);
+  const ESTIMATED_ITEM_SIZE = 120; // Used only for virtualization estimation
 
   useEffect(() => {
     const updateWidth = () => {
@@ -119,13 +117,14 @@ const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  const itemsPerRow = Math.floor(containerWidth / ITEM_WIDTH);
-  const totalRows = Math.ceil(icons.length / itemsPerRow);
+  const estimatedItemsPerRow =
+    Math.floor(containerWidth / ESTIMATED_ITEM_SIZE) || 1;
+  const totalRows = Math.ceil(icons.length / estimatedItemsPerRow);
 
   const virtualizer = useVirtualizer({
     count: totalRows,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => ITEM_HEIGHT,
+    estimateSize: () => ESTIMATED_ITEM_SIZE,
     overscan: 5, // Render 5 extra rows for smooth scrolling
   });
 
@@ -147,8 +146,11 @@ const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
         }}
       >
         {virtualizer.getVirtualItems().map(virtualRow => {
-          const startIndex = virtualRow.index * itemsPerRow;
-          const endIndex = Math.min(startIndex + itemsPerRow, icons.length);
+          const startIndex = virtualRow.index * estimatedItemsPerRow;
+          const endIndex = Math.min(
+            startIndex + estimatedItemsPerRow,
+            icons.length
+          );
           const rowIcons = icons.slice(startIndex, endIndex);
 
           return (
@@ -163,10 +165,7 @@ const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
                 transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              <div
-                className="virtual-row"
-                style={{ gridTemplateColumns: `repeat(${itemsPerRow}, 120px)` }}
-              >
+              <div className="virtual-row">
                 {rowIcons.map(icon => (
                   <IconCard
                     key={icon.path}
