@@ -104,7 +104,8 @@ body {
 .style-filter button {
   padding: 0.5rem 1rem;
   border: 1px solid #000000;
-  border-right: none;
+  margin-right: -1px;
+  margin-bottom: -1px;
   background: #ffffff;
   color: #000000;
   font-size: 0.875rem;
@@ -112,10 +113,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 500;
-}
-
-.style-filter button:last-child {
-  border-right: 1px solid #000000;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .style-filter button:hover {
@@ -172,9 +171,10 @@ body {
 
 .virtual-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 120px);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 0;
   justify-content: center;
+  max-width: 100%;
 }
 
 /* Icon Items */
@@ -348,6 +348,28 @@ body {
 }
 
 /* Responsive Design */
+
+/* Large tablets and small desktops */
+@media (max-width: 1024px) {
+  .header-content {
+    padding: 0 1.5rem;
+  }
+
+  .content {
+    padding: 0 1.5rem;
+  }
+
+  .virtual-row {
+    grid-template-columns: repeat(auto-fit, 110px);
+  }
+
+  .icon-item {
+    width: 110px;
+    height: 110px;
+  }
+}
+
+/* Tablets */
 @media (max-width: 768px) {
   .header {
     padding: 1rem 0;
@@ -355,11 +377,17 @@ body {
 
   .header-content {
     gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .content {
+    padding: 0 1rem;
   }
 
   .top-row {
     flex-direction: column;
     gap: 1rem;
+    align-items: stretch;
   }
 
   .collection-section {
@@ -373,24 +401,44 @@ body {
 
   .style-filter {
     flex-wrap: wrap;
+    justify-content: stretch;
   }
 
   .style-filter button {
-    flex: 1;
-    min-width: 60px;
+    flex: 0 0 auto;
+    min-width: 80px;
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
 
   .virtual-row {
+    grid-template-columns: repeat(auto-fit, 100px);
+    gap: 0;
     justify-content: center;
   }
 
   .icon-item {
     width: 100px;
     height: 100px;
+    padding: 0.75rem;
+  }
+
+  .icon-svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .icon-label {
+    font-size: 0.7rem;
+  }
+
+  .modal-overlay {
+    padding: 1rem;
   }
 
   .modal-content {
     padding: 2rem;
+    max-width: none;
   }
 
   .modal-actions {
@@ -400,5 +448,123 @@ body {
   .modal-actions button:first-child {
     border-right: 1px solid #000000;
     border-bottom: none;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+    /* Improve touch scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .header {
+    padding: 0.75rem 0;
+  }
+
+  .header-content {
+    padding: 0 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .content {
+    padding: 0 0.75rem;
+  }
+
+  .search-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.5rem 0;
+  }
+
+  .collection-filter select {
+    font-size: 0.875rem;
+    padding: 0.5rem 0;
+  }
+
+  .style-filter button {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.7rem;
+    min-width: 60px;
+    white-space: nowrap;
+  }
+
+  .virtual-row {
+    grid-template-columns: repeat(auto-fit, 85px);
+  }
+
+  .icon-item {
+    width: 85px;
+    height: 85px;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .icon-svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .icon-label {
+    font-size: 0.65rem;
+    line-height: 1.1;
+  }
+
+  .results-info {
+    font-size: 0.75rem;
+    padding: 0.75rem 0;
+  }
+
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.125rem;
+  }
+
+  .icon-large {
+    width: 60px;
+    height: 60px;
+  }
+
+  .modal-preview {
+    padding: 2rem;
+  }
+
+  .modal-actions button {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .virtual-row {
+    grid-template-columns: repeat(auto-fit, 75px);
+  }
+
+  .icon-item {
+    width: 75px;
+    height: 75px;
+    padding: 0.375rem;
+  }
+
+  .icon-svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .icon-label {
+    font-size: 0.6rem;
+  }
+
+  .style-filter button {
+    min-width: 50px;
+    padding: 0.25rem 0.375rem;
   }
 }
