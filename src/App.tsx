@@ -274,7 +274,9 @@ function App() {
                 type="text"
                 value={text}
                 onChange={e => setText(e.target.value)}
-                placeholder={`Search in ${selectedCollection}...`}
+                placeholder={`Search in ${formatCollectionName(
+                  selectedCollection
+                )}...`}
                 className="search-input"
                 disabled={isLoading}
               />
