@@ -1,10 +1,10 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import pLimit from 'p-limit';
 
 const inputDir = path.join(process.cwd(), 'src/assets/icons');
-const outputDir = path.join(process.cwd(), 'public');
-const outputFile = path.join(outputDir, 'icons.json');
+const outputDir = path.join(process.cwd(), 'public', 'icons');
+const manifestFile = path.join(outputDir, 'manifest.json');
 
 async function getIconFiles(dir) {
   const dirents = await readdir(dir, { withFileTypes: true });
@@ -19,47 +19,39 @@ async function getIconFiles(dir) {
 
 async function buildIcons() {
   console.log('Starting icon build...');
+  await mkdir(outputDir, { recursive: true });
+
   const iconFiles = await getIconFiles(inputDir);
   console.log(`Found ${iconFiles.length} icons.`);
 
-  const limit = pLimit(100); // Limit to 100 concurrent file reads
+  const limit = pLimit(100);
 
-  const icons = await Promise.all(
+  const allIcons = await Promise.all(
     iconFiles.map(file =>
       limit(async () => {
         const content = await readFile(file, 'utf-8');
         const relativePath = path.relative(inputDir, file);
 
-        const [collection, part1, part2, ...rest] = relativePath.split(
-          path.sep
-        );
-        // This will handle cases where icons are directly in the collection folder
-        const name = part2
-          ? path.basename(rest.join(path.sep), '.svg')
-          : path.basename(part1, '.svg');
+        const parts = relativePath.split(path.sep);
+        const collection = parts.shift();
+        const filename = parts.pop();
+        const name = path.basename(filename, '.svg');
 
-        // Heuristic to determine if the structure is collection/style/category or collection/category/style
-        const isStyleFirst = [
-          'solid',
-          'regular',
-          'light',
-          'thin',
-          'duotone',
-          'brands',
-          'sharp-solid',
-          'sharp-regular',
-          'sharp-light',
-          'sharp-thin',
-        ].includes(part1);
-
-        const style = isStyleFirst ? part1 : part2;
-        const category = isStyleFirst ? part2 : part1;
+        let style, category;
+        if (collection === 'font-awesome') {
+          style = parts[0] || 'default';
+          category = parts[1] || 'general';
+        } else {
+          // Handles 'huge' and any other collections
+          category = parts[0] || 'general';
+          style = parts[1] || 'default';
+        }
 
         return {
           name,
           collection,
-          category: category || 'general', // Assign a default category if none is found
-          style: style || 'default', // Assign a default style if none is found
+          category,
+          style,
           path: relativePath,
           content,
         };
@@ -67,8 +59,30 @@ async function buildIcons() {
     )
   );
 
-  await writeFile(outputFile, JSON.stringify(icons, null, 2));
-  console.log(`Successfully built ${icons.length} icons to ${outputFile}`);
+  const iconsByCollection = allIcons.reduce((acc, icon) => {
+    if (!acc[icon.collection]) {
+      acc[icon.collection] = [];
+    }
+    acc[icon.collection].push(icon);
+    return acc;
+  }, {});
+
+  for (const collectionName in iconsByCollection) {
+    const filePath = path.join(outputDir, `${collectionName}.json`);
+    await writeFile(
+      filePath,
+      JSON.stringify(iconsByCollection[collectionName], null, 2)
+    );
+    console.log(
+      `Successfully built ${iconsByCollection[collectionName].length} icons to ${filePath}`
+    );
+  }
+
+  const manifest = {
+    collections: Object.keys(iconsByCollection).sort(),
+  };
+  await writeFile(manifestFile, JSON.stringify(manifest, null, 2));
+  console.log('Successfully created manifest file.');
 }
 
 buildIcons().catch(err => {

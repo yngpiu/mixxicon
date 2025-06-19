@@ -120,47 +120,49 @@ const IconGrid = memo(function IconGrid({
 });
 
 function App() {
-  const [icons, setIcons] = useState<Icon[]>([]);
+  const [allIcons, setAllIcons] = useState<Icon[]>([]);
+  const [collections, setCollections] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [query] = useDebounce(text, 300);
-  const [selectedCollection, setSelectedCollection] = useState('all');
+  const [selectedCollection, setSelectedCollection] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('all');
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/icons.json')
+    fetch('/icons/manifest.json')
       .then(res => res.json())
-      .then(setIcons);
+      .then(manifest => {
+        setCollections(manifest.collections);
+        if (manifest.collections.length > 0) {
+          setSelectedCollection(manifest.collections[0]); // Select the first collection by default
+        }
+      });
   }, []);
 
-  const collections = useMemo(
-    () => ['all', ...Array.from(new Set(icons.map(i => i.collection)))].sort(),
-    [icons]
-  );
-  const styles = useMemo(() => {
-    const availableStyles = icons
-      .filter(
-        i => selectedCollection === 'all' || i.collection === selectedCollection
-      )
-      .map(i => i.style);
-    return ['all', ...Array.from(new Set(availableStyles))].sort();
-  }, [icons, selectedCollection]);
+  useEffect(() => {
+    if (!selectedCollection) return;
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(icons, {
-        keys: ['name', 'category', 'collection'],
-        threshold: 0.3,
-        ignoreLocation: true,
-      }),
-    [icons]
-  );
+    setIsLoading(true);
+    fetch(`/icons/${selectedCollection}.json`)
+      .then(res => res.json())
+      .then(data => {
+        setAllIcons(data);
+        setIsLoading(false);
+      });
+  }, [selectedCollection]);
+
+  const styles = useMemo(() => {
+    const availableStyles = allIcons.map(i => i.style);
+    return ['all', ...Array.from(new Set(availableStyles))].sort();
+  }, [allIcons]);
 
   const filteredIcons = useMemo(() => {
-    let results = query ? fuse.search(query).map(r => r.item) : icons;
+    let results = allIcons;
 
-    if (selectedCollection !== 'all') {
-      results = results.filter(icon => icon.collection === selectedCollection);
+    if (query) {
+      const fuse = new Fuse(allIcons, { keys: ['name'], threshold: 0.3 });
+      results = fuse.search(query).map(r => r.item);
     }
 
     if (selectedStyle !== 'all') {
@@ -168,7 +170,7 @@ function App() {
     }
 
     return results;
-  }, [query, icons, fuse, selectedCollection, selectedStyle]);
+  }, [query, allIcons, selectedStyle]);
 
   const handleIconClick = useCallback((icon: Icon) => {
     setSelectedIcon(icon);
@@ -176,7 +178,8 @@ function App() {
 
   const handleCollectionChange = (collection: string) => {
     setSelectedCollection(collection);
-    setSelectedStyle('all'); // Reset style when collection changes
+    setSelectedStyle('all');
+    setText('');
   };
 
   return (
@@ -190,14 +193,16 @@ function App() {
                 type="text"
                 value={text}
                 onChange={e => setText(e.target.value)}
-                placeholder={`Search ${icons.length} icons...`}
+                placeholder={`Search in ${selectedCollection}...`}
                 className="search-input"
+                disabled={isLoading}
               />
             </div>
             <div className="collection-filter">
               <select
                 onChange={e => handleCollectionChange(e.target.value)}
                 value={selectedCollection}
+                disabled={collections.length === 0}
               >
                 {collections.map(c => (
                   <option key={c} value={c}>
@@ -212,6 +217,7 @@ function App() {
                   key={style}
                   className={selectedStyle === style ? 'active' : ''}
                   onClick={() => setSelectedStyle(style)}
+                  disabled={isLoading}
                 >
                   {style}
                 </button>
@@ -224,9 +230,19 @@ function App() {
       <main className="main">
         <div className="content">
           <div className="results-info">
-            <span>{filteredIcons.length} icons</span>
+            {isLoading ? (
+              <span>Loading...</span>
+            ) : (
+              <span>{filteredIcons.length} icons</span>
+            )}
           </div>
-          <IconGrid icons={filteredIcons} onIconClick={handleIconClick} />
+          {isLoading ? (
+            <div className="empty-state">
+              <p>Loading icons...</p>
+            </div>
+          ) : (
+            <IconGrid icons={filteredIcons} onIconClick={handleIconClick} />
+          )}
         </div>
       </main>
 

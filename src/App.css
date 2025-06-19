@@ -138,6 +138,7 @@ body {
   margin-bottom: 2rem;
   color: #666666;
   font-size: 0.9rem;
+  min-height: 1em;
 }
 
 /* Icons Grid */
@@ -198,6 +199,17 @@ body {
 .empty-state p {
   margin: 0;
   font-size: 1rem;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 /* Modal */
