@@ -108,25 +108,44 @@ const IconGrid = memo(function IconGrid({
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!hasMore || isLoadingMore) return;
-
-    observerRef.current = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          onLoadMore();
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '200px 0px', // Trigger 200px before the element enters viewport
+    console.log('Setting up observer:', {
+      hasMore,
+      isLoadingMore,
+      hasLoadMoreRef: !!loadMoreRef.current,
+    });
+    if (!hasMore || isLoadingMore) {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
       }
-    );
-
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
+      return;
     }
 
+    // Delay observer setup to ensure DOM element is rendered
+    const timer = setTimeout(() => {
+      if (!loadMoreRef.current) {
+        console.log('LoadMore ref still null, skipping observer setup');
+        return;
+      }
+
+      observerRef.current = new IntersectionObserver(
+        entries => {
+          console.log('Observer triggered:', entries[0].isIntersecting);
+          if (entries[0].isIntersecting) {
+            onLoadMore();
+          }
+        },
+        {
+          threshold: 0.1,
+          rootMargin: '200px 0px', // Trigger 200px before the element enters viewport
+        }
+      );
+
+      observerRef.current.observe(loadMoreRef.current);
+      console.log('Observer attached to trigger element');
+    }, 100);
+
     return () => {
+      clearTimeout(timer);
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
@@ -226,11 +245,17 @@ function App() {
 
   // Reset displayed icons when filters change
   useEffect(() => {
-    setCurrentPage(0);
-    setDisplayedIcons(filteredIcons.slice(0, ITEMS_PER_PAGE));
+    if (filteredIcons.length > 0) {
+      setCurrentPage(0);
+      setDisplayedIcons(filteredIcons.slice(0, ITEMS_PER_PAGE));
+    } else if (filteredIcons.length === 0) {
+      setDisplayedIcons([]);
+      setCurrentPage(0);
+    }
   }, [filteredIcons]);
 
   const loadMore = useCallback(() => {
+    console.log('LoadMore called:', { isLoadingMore, currentPage });
     if (isLoadingMore) return;
 
     setIsLoadingMore(true);
@@ -242,6 +267,14 @@ function App() {
       const endIndex = startIndex + ITEMS_PER_PAGE;
       const newIcons = filteredIcons.slice(startIndex, endIndex);
 
+      console.log('Loading more:', {
+        nextPage,
+        startIndex,
+        endIndex,
+        newIconsCount: newIcons.length,
+        totalFiltered: filteredIcons.length,
+      });
+
       setDisplayedIcons(prev => [...prev, ...newIcons]);
       setCurrentPage(nextPage);
       setIsLoadingMore(false);
@@ -249,7 +282,14 @@ function App() {
   }, [currentPage, filteredIcons, isLoadingMore]);
 
   const hasMore = useMemo(() => {
-    return displayedIcons.length < filteredIcons.length;
+    const result =
+      displayedIcons.length < filteredIcons.length && filteredIcons.length > 0;
+    console.log('HasMore check:', {
+      displayedLength: displayedIcons.length,
+      filteredLength: filteredIcons.length,
+      hasMore: result,
+    });
+    return result;
   }, [displayedIcons.length, filteredIcons.length]);
 
   const handleIconClick = useCallback((icon: Icon) => {
