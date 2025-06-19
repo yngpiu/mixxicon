@@ -38,13 +38,25 @@ async function buildIcons() {
         const name = path.basename(filename, '.svg');
 
         let style, category;
-        if (collection === 'font-awesome') {
-          style = parts[0] || 'default';
-          category = parts[1] || 'general';
-        } else {
-          // Handles 'huge' and any other collections
-          category = parts[0] || 'general';
-          style = parts[1] || 'default';
+
+        // General logic for parsing styles and categories
+        switch (collection) {
+          case 'font-awesome':
+            // Structure: font-awesome/{style}/{...category}/{icon}.svg
+            style = parts.shift() || 'default';
+            category = parts.join(path.sep) || 'general';
+            break;
+          case 'panda':
+            // Structure: panda/{style}/{icon}.svg
+            style = parts.shift() || 'default';
+            category = 'general';
+            break;
+          case 'huge':
+          default:
+            // Structure: huge/{category}/{style}/{icon}.svg
+            category = parts.shift() || 'general';
+            style = parts.shift() || 'default';
+            break;
         }
 
         return {
