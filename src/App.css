@@ -98,13 +98,13 @@ body {
 .style-filter {
   display: flex;
   gap: 0;
-  border: 1px solid #000000;
+  justify-content: center;
 }
 
 .style-filter button {
   padding: 0.5rem 1rem;
-  border: none;
-  border-right: 1px solid #000000;
+  border: 1px solid #000000;
+  border-right: none;
   background: #ffffff;
   color: #000000;
   font-size: 0.875rem;
@@ -115,7 +115,7 @@ body {
 }
 
 .style-filter button:last-child {
-  border-right: none;
+  border-right: 1px solid #000000;
 }
 
 .style-filter button:hover {
