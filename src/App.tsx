@@ -102,8 +102,8 @@ const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Calculate how many items per row based on container width
-  const ITEM_WIDTH = 156; // 140px + 16px gap
-  const ITEM_HEIGHT = 156; // Same as width for square items
+  const ITEM_WIDTH = 120; // Exact width of each icon item
+  const ITEM_HEIGHT = 120; // Same as width for square items
 
   const [containerWidth, setContainerWidth] = useState(1400);
 
@@ -163,7 +163,10 @@ const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
                 transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              <div className="virtual-row">
+              <div
+                className="virtual-row"
+                style={{ gridTemplateColumns: `repeat(${itemsPerRow}, 120px)` }}
+              >
                 {rowIcons.map(icon => (
                   <IconCard
                     key={icon.path}
@@ -252,9 +255,8 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <h1>Icons</h1>
-          <div className="controls">
-            <div className="search-box">
+          <div className="top-row">
+            <div className="search-section">
               <input
                 type="text"
                 value={text}
@@ -264,19 +266,25 @@ function App() {
                 disabled={isLoading}
               />
             </div>
-            <div className="collection-filter">
-              <select
-                onChange={e => handleCollectionChange(e.target.value)}
-                value={selectedCollection}
-                disabled={collections.length === 0}
-              >
-                {collections.map(c => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+
+            <div className="collection-section">
+              <div className="collection-filter">
+                <select
+                  onChange={e => handleCollectionChange(e.target.value)}
+                  value={selectedCollection}
+                  disabled={collections.length === 0}
+                >
+                  {collections.map(c => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+          </div>
+
+          <div className="style-row">
             <div className="style-filter">
               {styles.map(style => (
                 <button
