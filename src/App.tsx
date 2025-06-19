@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import Fuse from 'fuse.js';
+import { useDebounce } from 'use-debounce';
 import './App.css';
 
 type Icon = {
@@ -85,9 +86,40 @@ function IconCard({ icon, onClick }: { icon: Icon; onClick: () => void }) {
   );
 }
 
+const IconDisplay = memo(function IconDisplay({
+  groupedIcons,
+  onIconClick,
+}: {
+  groupedIcons: Record<string, Icon[]>;
+  onIconClick: (icon: Icon) => void;
+}) {
+  return (
+    <main className="main-content">
+      {Object.entries(groupedIcons).map(([category, icons]) => (
+        <section key={category} className="category-section">
+          <div className="category-header">
+            <h2 className="category-title">{category}</h2>
+            <span className="category-count">{icons.length}</span>
+          </div>
+          <div className="icons-grid">
+            {icons.map(icon => (
+              <IconCard
+                key={icon.path}
+                icon={icon}
+                onClick={() => onIconClick(icon)}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </main>
+  );
+});
+
 function App() {
   const [icons, setIcons] = useState<Icon[]>([]);
-  const [query, setQuery] = useState('');
+  const [text, setText] = useState('');
+  const [query] = useDebounce(text, 300);
   const [selectedStyle, setSelectedStyle] = useState('all');
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
 
@@ -131,6 +163,10 @@ function App() {
     }, {});
   }, [filteredIcons]);
 
+  const handleIconClick = useCallback((icon: Icon) => {
+    setSelectedIcon(icon);
+  }, []);
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -152,33 +188,15 @@ function App() {
           <div className="search-container">
             <input
               type="search"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
+              value={text}
+              onChange={e => setText(e.target.value)}
               placeholder={`Search ${icons.length} icons...`}
               className="search-input"
             />
           </div>
         </div>
       </header>
-      <main className="main-content">
-        {Object.entries(groupedIcons).map(([category, icons]) => (
-          <section key={category} className="category-section">
-            <div className="category-header">
-              <h2 className="category-title">{category}</h2>
-              <span className="category-count">{icons.length}</span>
-            </div>
-            <div className="icons-grid">
-              {icons.map(icon => (
-                <IconCard
-                  key={icon.path}
-                  icon={icon}
-                  onClick={() => setSelectedIcon(icon)}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-      </main>
+      <IconDisplay groupedIcons={groupedIcons} onIconClick={handleIconClick} />
       {selectedIcon && (
         <IconDetailModal
           icon={selectedIcon}
