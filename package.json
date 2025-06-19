@@ -1,8 +1,29 @@
 {
-  "name": "mixxicon",
-  "private": true,
-  "version": "0.0.0",
+  "name": "svg-icon-browser",
+  "private": false,
+  "version": "1.0.0",
   "type": "module",
+  "description": "A modern, fast, and responsive web application for browsing, searching, and managing large collections of SVG icons",
+  "keywords": [
+    "icons",
+    "svg",
+    "react",
+    "typescript",
+    "vite",
+    "browser",
+    "search",
+    "font-awesome"
+  ],
+  "author": "Your Name <your-email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/svg-icon-browser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/svg-icon-browser/issues"
+  },
+  "homepage": "https://github.com/yourusername/svg-icon-browser#readme",
   "scripts": {
     "dev": "pnpm build:icons && vite",
     "build": "pnpm build:icons && tsc -b && vite build",
