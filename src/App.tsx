@@ -23,7 +23,7 @@ function IconDetailModal({
   const copySvg = useCallback(() => {
     navigator.clipboard.writeText(icon.content);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setTimeout(() => setCopied(false), 2000);
   }, [icon.content]);
 
   const downloadSvg = useCallback(() => {
@@ -54,20 +54,24 @@ function IconDetailModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">{icon.name}</h2>
-          <button onClick={onClose} className="close-button">
-            &times;
+          <h3>{icon.name}</h3>
+          <button onClick={onClose} className="close-btn">
+            ×
           </button>
         </div>
-        <div className="modal-body">
+        <div className="modal-preview">
           <div
-            className="modal-icon-preview"
+            className="icon-large"
             dangerouslySetInnerHTML={{ __html: icon.content }}
           />
         </div>
-        <div className="modal-footer">
-          <button onClick={copySvg}>{copied ? 'Copied!' : 'Copy SVG'}</button>
-          <button onClick={downloadSvg}>Download SVG</button>
+        <div className="modal-actions">
+          <button onClick={copySvg} className="btn-copy">
+            {copied ? 'Copied!' : 'Copy SVG'}
+          </button>
+          <button onClick={downloadSvg} className="btn-download">
+            Download
+          </button>
         </div>
       </div>
     </div>
@@ -76,43 +80,41 @@ function IconDetailModal({
 
 function IconCard({ icon, onClick }: { icon: Icon; onClick: () => void }) {
   return (
-    <div className="icon-card" onClick={onClick}>
+    <div className="icon-item" onClick={onClick}>
       <div
-        className="icon-preview"
+        className="icon-svg"
         dangerouslySetInnerHTML={{ __html: icon.content }}
       />
-      <p className="icon-name">{icon.name}</p>
+      <span className="icon-label">{icon.name}</span>
     </div>
   );
 }
 
-const IconDisplay = memo(function IconDisplay({
-  groupedIcons,
+const IconGrid = memo(function IconGrid({
+  icons,
   onIconClick,
 }: {
-  groupedIcons: Record<string, Icon[]>;
+  icons: Icon[];
   onIconClick: (icon: Icon) => void;
 }) {
+  if (icons.length === 0) {
+    return (
+      <div className="empty-state">
+        <p>No icons found</p>
+      </div>
+    );
+  }
+
   return (
-    <main className="main-content">
-      {Object.entries(groupedIcons).map(([category, icons]) => (
-        <section key={category} className="category-section">
-          <div className="category-header">
-            <h2 className="category-title">{category}</h2>
-            <span className="category-count">{icons.length}</span>
-          </div>
-          <div className="icons-grid">
-            {icons.map(icon => (
-              <IconCard
-                key={icon.path}
-                icon={icon}
-                onClick={() => onIconClick(icon)}
-              />
-            ))}
-          </div>
-        </section>
+    <div className="icons-container">
+      {icons.map(icon => (
+        <IconCard
+          key={icon.path}
+          icon={icon}
+          onClick={() => onIconClick(icon)}
+        />
       ))}
-    </main>
+    </div>
   );
 });
 
@@ -143,60 +145,61 @@ function App() {
 
   const filteredIcons = useMemo(() => {
     let results = icons;
+
     if (query) {
       results = fuse.search(query).map(r => r.item);
     }
+
     if (selectedStyle !== 'all') {
       results = results.filter(icon => icon.style === selectedStyle);
     }
+
     return results;
   }, [query, icons, fuse, selectedStyle]);
-
-  const groupedIcons = useMemo(() => {
-    return filteredIcons.reduce<Record<string, Icon[]>>((acc, icon) => {
-      const { category } = icon;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(icon);
-      return acc;
-    }, {});
-  }, [filteredIcons]);
 
   const handleIconClick = useCallback((icon: Icon) => {
     setSelectedIcon(icon);
   }, []);
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1 className="app-title">Icon Library</h1>
-        <div className="filters">
-          <div className="styles-filter">
-            {styles.map(style => (
-              <button
-                key={style}
-                className={`filter-button ${
-                  selectedStyle === style ? 'active' : ''
-                }`}
-                onClick={() => setSelectedStyle(style)}
-              >
-                {style}
-              </button>
-            ))}
-          </div>
-          <div className="search-container">
-            <input
-              type="search"
-              value={text}
-              onChange={e => setText(e.target.value)}
-              placeholder={`Search ${icons.length} icons...`}
-              className="search-input"
-            />
+    <div className="app">
+      <header className="header">
+        <div className="header-content">
+          <h1>Icons</h1>
+          <div className="controls">
+            <div className="search-box">
+              <input
+                type="text"
+                value={text}
+                onChange={e => setText(e.target.value)}
+                placeholder="Search icons..."
+                className="search-input"
+              />
+            </div>
+            <div className="style-filter">
+              {styles.map(style => (
+                <button
+                  key={style}
+                  className={selectedStyle === style ? 'active' : ''}
+                  onClick={() => setSelectedStyle(style)}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
-      <IconDisplay groupedIcons={groupedIcons} onIconClick={handleIconClick} />
+
+      <main className="main">
+        <div className="content">
+          <div className="results-info">
+            <span>{filteredIcons.length} icons</span>
+          </div>
+          <IconGrid icons={filteredIcons} onIconClick={handleIconClick} />
+        </div>
+      </main>
+
       {selectedIcon && (
         <IconDetailModal
           icon={selectedIcon}
