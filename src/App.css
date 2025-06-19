@@ -171,7 +171,7 @@ body {
 
 .virtual-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, 120px);
   gap: 0;
   justify-content: center;
   max-width: 100%;
@@ -360,7 +360,7 @@ body {
   }
 
   .virtual-row {
-    grid-template-columns: repeat(auto-fit, 110px);
+    grid-template-columns: repeat(auto-fill, 110px);
   }
 
   .icon-item {
@@ -412,7 +412,7 @@ body {
   }
 
   .virtual-row {
-    grid-template-columns: repeat(auto-fit, 100px);
+    grid-template-columns: repeat(auto-fill, 100px);
     gap: 0;
     justify-content: center;
   }
@@ -490,7 +490,7 @@ body {
   }
 
   .virtual-row {
-    grid-template-columns: repeat(auto-fit, 85px);
+    grid-template-columns: repeat(auto-fill, 85px);
   }
 
   .icon-item {
@@ -545,7 +545,7 @@ body {
 /* Very small screens */
 @media (max-width: 320px) {
   .virtual-row {
-    grid-template-columns: repeat(auto-fit, 75px);
+    grid-template-columns: repeat(auto-fill, 75px);
   }
 
   .icon-item {
