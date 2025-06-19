@@ -1,6 +1,5 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import * as cheerio from 'cheerio';
 
 const inputDir = path.join(process.cwd(), 'src/assets/icons');
 const outputDir = path.join(process.cwd(), 'public');
@@ -29,16 +28,12 @@ async function buildIcons() {
       const [category, style, ...rest] = relativePath.split(path.sep);
       const name = path.basename(rest.join(path.sep), '.svg');
 
-      const $ = cheerio.load(content, { xmlMode: true });
-      $('svg').attr('fill', 'currentColor');
-      const modifiedContent = $.html();
-
       return {
         name,
         category,
         style,
         path: relativePath,
-        content: modifiedContent,
+        content,
       };
     })
   );
