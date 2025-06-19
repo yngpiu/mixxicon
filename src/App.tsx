@@ -9,6 +9,7 @@ type Icon = {
   style: string;
   path: string;
   content: string;
+  collection: string;
 };
 
 function IconDetailModal({
@@ -122,6 +123,7 @@ function App() {
   const [icons, setIcons] = useState<Icon[]>([]);
   const [text, setText] = useState('');
   const [query] = useDebounce(text, 300);
+  const [selectedCollection, setSelectedCollection] = useState('all');
   const [selectedStyle, setSelectedStyle] = useState('all');
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
 
@@ -131,12 +133,23 @@ function App() {
       .then(setIcons);
   }, []);
 
-  const styles = useMemo(() => ['all', 'bulk', 'outline', 'solid'], []);
+  const collections = useMemo(
+    () => ['all', ...Array.from(new Set(icons.map(i => i.collection)))].sort(),
+    [icons]
+  );
+  const styles = useMemo(() => {
+    const availableStyles = icons
+      .filter(
+        i => selectedCollection === 'all' || i.collection === selectedCollection
+      )
+      .map(i => i.style);
+    return ['all', ...Array.from(new Set(availableStyles))].sort();
+  }, [icons, selectedCollection]);
 
   const fuse = useMemo(
     () =>
       new Fuse(icons, {
-        keys: ['name', 'category'],
+        keys: ['name', 'category', 'collection'],
         threshold: 0.3,
         ignoreLocation: true,
       }),
@@ -144,10 +157,10 @@ function App() {
   );
 
   const filteredIcons = useMemo(() => {
-    let results = icons;
+    let results = query ? fuse.search(query).map(r => r.item) : icons;
 
-    if (query) {
-      results = fuse.search(query).map(r => r.item);
+    if (selectedCollection !== 'all') {
+      results = results.filter(icon => icon.collection === selectedCollection);
     }
 
     if (selectedStyle !== 'all') {
@@ -155,11 +168,16 @@ function App() {
     }
 
     return results;
-  }, [query, icons, fuse, selectedStyle]);
+  }, [query, icons, fuse, selectedCollection, selectedStyle]);
 
   const handleIconClick = useCallback((icon: Icon) => {
     setSelectedIcon(icon);
   }, []);
+
+  const handleCollectionChange = (collection: string) => {
+    setSelectedCollection(collection);
+    setSelectedStyle('all'); // Reset style when collection changes
+  };
 
   return (
     <div className="app">
@@ -172,9 +190,21 @@ function App() {
                 type="text"
                 value={text}
                 onChange={e => setText(e.target.value)}
-                placeholder="Search icons..."
+                placeholder={`Search ${icons.length} icons...`}
                 className="search-input"
               />
+            </div>
+            <div className="collection-filter">
+              <select
+                onChange={e => handleCollectionChange(e.target.value)}
+                value={selectedCollection}
+              >
+                {collections.map(c => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="style-filter">
               {styles.map(style => (

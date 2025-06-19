@@ -1,5 +1,6 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import pLimit from 'p-limit';
 
 const inputDir = path.join(process.cwd(), 'src/assets/icons');
 const outputDir = path.join(process.cwd(), 'public');
@@ -21,21 +22,49 @@ async function buildIcons() {
   const iconFiles = await getIconFiles(inputDir);
   console.log(`Found ${iconFiles.length} icons.`);
 
-  const icons = await Promise.all(
-    iconFiles.map(async file => {
-      const content = await readFile(file, 'utf-8');
-      const relativePath = path.relative(inputDir, file);
-      const [category, style, ...rest] = relativePath.split(path.sep);
-      const name = path.basename(rest.join(path.sep), '.svg');
+  const limit = pLimit(100); // Limit to 100 concurrent file reads
 
-      return {
-        name,
-        category,
-        style,
-        path: relativePath,
-        content,
-      };
-    })
+  const icons = await Promise.all(
+    iconFiles.map(file =>
+      limit(async () => {
+        const content = await readFile(file, 'utf-8');
+        const relativePath = path.relative(inputDir, file);
+
+        const [collection, part1, part2, ...rest] = relativePath.split(
+          path.sep
+        );
+        // This will handle cases where icons are directly in the collection folder
+        const name = part2
+          ? path.basename(rest.join(path.sep), '.svg')
+          : path.basename(part1, '.svg');
+
+        // Heuristic to determine if the structure is collection/style/category or collection/category/style
+        const isStyleFirst = [
+          'solid',
+          'regular',
+          'light',
+          'thin',
+          'duotone',
+          'brands',
+          'sharp-solid',
+          'sharp-regular',
+          'sharp-light',
+          'sharp-thin',
+        ].includes(part1);
+
+        const style = isStyleFirst ? part1 : part2;
+        const category = isStyleFirst ? part2 : part1;
+
+        return {
+          name,
+          collection,
+          category: category || 'general', // Assign a default category if none is found
+          style: style || 'default', // Assign a default style if none is found
+          path: relativePath,
+          content,
+        };
+      })
+    )
   );
 
   await writeFile(outputFile, JSON.stringify(icons, null, 2));
