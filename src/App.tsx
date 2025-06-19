@@ -116,7 +116,10 @@ const IconGrid = memo(function IconGrid({
           onLoadMore();
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.1,
+        rootMargin: '200px 0px', // Trigger 200px before the element enters viewport
+      }
     );
 
     if (loadMoreRef.current) {

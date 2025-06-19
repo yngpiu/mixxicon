@@ -503,8 +503,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  min-height: 60px;
+  padding: 4rem 2rem;
+  min-height: 120px;
 }
 
 .loading-more {
