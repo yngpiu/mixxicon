@@ -192,6 +192,20 @@ function App() {
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const formatCollectionName = (name: string) => {
+    if (!name) return '';
+    return name
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  useEffect(() => {
+    document.title = selectedCollection
+      ? `Mixxicon - ${formatCollectionName(selectedCollection)}`
+      : 'Mixxicon';
+  }, [selectedCollection]);
+
   useEffect(() => {
     fetch('/icons/manifest.json')
       .then(res => res.json())
@@ -275,7 +289,7 @@ function App() {
                 >
                   {collections.map(c => (
                     <option key={c} value={c}>
-                      {c}
+                      {formatCollectionName(c)}
                     </option>
                   ))}
                 </select>
