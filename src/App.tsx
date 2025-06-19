@@ -187,7 +187,7 @@ function App() {
   const [allIcons, setAllIcons] = useState<Icon[]>([]);
   const [collections, setCollections] = useState<string[]>([]);
   const [text, setText] = useState('');
-  const [query] = useDebounce(text, 300);
+  const [query] = useDebounce(text, 200);
   const [selectedCollection, setSelectedCollection] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('all');
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
