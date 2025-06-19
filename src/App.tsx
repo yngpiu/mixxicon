@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import Fuse from 'fuse.js';
 import { useDebounce } from 'use-debounce';
 import './App.css';
@@ -91,66 +92,42 @@ function IconCard({ icon, onClick }: { icon: Icon; onClick: () => void }) {
   );
 }
 
-const IconGrid = memo(function IconGrid({
+const VirtualizedIconGrid = memo(function VirtualizedIconGrid({
   icons,
   onIconClick,
-  onLoadMore,
-  hasMore,
-  isLoadingMore,
 }: {
   icons: Icon[];
   onIconClick: (icon: Icon) => void;
-  onLoadMore: () => void;
-  hasMore: boolean;
-  isLoadingMore: boolean;
 }) {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // Calculate how many items per row based on container width
+  const ITEM_WIDTH = 156; // 140px + 16px gap
+  const ITEM_HEIGHT = 156; // Same as width for square items
+
+  const [containerWidth, setContainerWidth] = useState(1400);
 
   useEffect(() => {
-    console.log('Setting up observer:', {
-      hasMore,
-      isLoadingMore,
-      hasLoadMoreRef: !!loadMoreRef.current,
-    });
-    if (!hasMore || isLoadingMore) {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-      return;
-    }
-
-    // Delay observer setup to ensure DOM element is rendered
-    const timer = setTimeout(() => {
-      if (!loadMoreRef.current) {
-        console.log('LoadMore ref still null, skipping observer setup');
-        return;
-      }
-
-      observerRef.current = new IntersectionObserver(
-        entries => {
-          console.log('Observer triggered:', entries[0].isIntersecting);
-          if (entries[0].isIntersecting) {
-            onLoadMore();
-          }
-        },
-        {
-          threshold: 0.1,
-          rootMargin: '200px 0px', // Trigger 200px before the element enters viewport
-        }
-      );
-
-      observerRef.current.observe(loadMoreRef.current);
-      console.log('Observer attached to trigger element');
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      if (observerRef.current) {
-        observerRef.current.disconnect();
+    const updateWidth = () => {
+      if (parentRef.current) {
+        setContainerWidth(parentRef.current.offsetWidth);
       }
     };
-  }, [hasMore, isLoadingMore, onLoadMore]);
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  const itemsPerRow = Math.floor(containerWidth / ITEM_WIDTH);
+  const totalRows = Math.ceil(icons.length / itemsPerRow);
+
+  const virtualizer = useVirtualizer({
+    count: totalRows,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ITEM_HEIGHT,
+    overscan: 5, // Render 5 extra rows for smooth scrolling
+  });
 
   if (icons.length === 0) {
     return (
@@ -161,30 +138,50 @@ const IconGrid = memo(function IconGrid({
   }
 
   return (
-    <div className="icons-container">
-      {icons.map(icon => (
-        <IconCard
-          key={icon.path}
-          icon={icon}
-          onClick={() => onIconClick(icon)}
-        />
-      ))}
-      {hasMore && (
-        <div ref={loadMoreRef} className="load-more-trigger">
-          {isLoadingMore && (
-            <div className="loading-more">
-              <p>Loading more icons...</p>
+    <div ref={parentRef} className="virtual-container">
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {virtualizer.getVirtualItems().map(virtualRow => {
+          const startIndex = virtualRow.index * itemsPerRow;
+          const endIndex = Math.min(startIndex + itemsPerRow, icons.length);
+          const rowIcons = icons.slice(startIndex, endIndex);
+
+          return (
+            <div
+              key={virtualRow.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <div className="virtual-row">
+                {rowIcons.map(icon => (
+                  <IconCard
+                    key={icon.path}
+                    icon={icon}
+                    onClick={() => onIconClick(icon)}
+                  />
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 });
 
 function App() {
   const [allIcons, setAllIcons] = useState<Icon[]>([]);
-  const [displayedIcons, setDisplayedIcons] = useState<Icon[]>([]);
   const [collections, setCollections] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [query] = useDebounce(text, 300);
@@ -192,10 +189,6 @@ function App() {
   const [selectedStyle, setSelectedStyle] = useState('all');
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-
-  const ITEMS_PER_PAGE = 50;
 
   useEffect(() => {
     fetch('/icons/manifest.json')
@@ -212,8 +205,6 @@ function App() {
     if (!selectedCollection) return;
 
     setIsLoading(true);
-    setCurrentPage(0);
-    setDisplayedIcons([]);
 
     fetch(`/icons/${selectedCollection}.json`)
       .then(res => res.json())
@@ -242,55 +233,6 @@ function App() {
 
     return results;
   }, [query, allIcons, selectedStyle]);
-
-  // Reset displayed icons when filters change
-  useEffect(() => {
-    if (filteredIcons.length > 0) {
-      setCurrentPage(0);
-      setDisplayedIcons(filteredIcons.slice(0, ITEMS_PER_PAGE));
-    } else if (filteredIcons.length === 0) {
-      setDisplayedIcons([]);
-      setCurrentPage(0);
-    }
-  }, [filteredIcons]);
-
-  const loadMore = useCallback(() => {
-    console.log('LoadMore called:', { isLoadingMore, currentPage });
-    if (isLoadingMore) return;
-
-    setIsLoadingMore(true);
-
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-      const nextPage = currentPage + 1;
-      const startIndex = nextPage * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      const newIcons = filteredIcons.slice(startIndex, endIndex);
-
-      console.log('Loading more:', {
-        nextPage,
-        startIndex,
-        endIndex,
-        newIconsCount: newIcons.length,
-        totalFiltered: filteredIcons.length,
-      });
-
-      setDisplayedIcons(prev => [...prev, ...newIcons]);
-      setCurrentPage(nextPage);
-      setIsLoadingMore(false);
-    }, 300);
-  }, [currentPage, filteredIcons, isLoadingMore]);
-
-  const hasMore = useMemo(() => {
-    const result =
-      displayedIcons.length < filteredIcons.length && filteredIcons.length > 0;
-    console.log('HasMore check:', {
-      displayedLength: displayedIcons.length,
-      filteredLength: filteredIcons.length,
-      hasMore: result,
-    });
-    return result;
-  }, [displayedIcons.length, filteredIcons.length]);
 
   const handleIconClick = useCallback((icon: Icon) => {
     setSelectedIcon(icon);
@@ -357,10 +299,7 @@ function App() {
             {isLoading ? (
               <span>Loading...</span>
             ) : (
-              <span>
-                Showing {displayedIcons.length} of {filteredIcons.length} icons
-                {hasMore && ' (scroll down for more)'}
-              </span>
+              <span>{filteredIcons.length} icons</span>
             )}
           </div>
           {isLoading ? (
@@ -368,12 +307,9 @@ function App() {
               <p>Loading icons...</p>
             </div>
           ) : (
-            <IconGrid
-              icons={displayedIcons}
+            <VirtualizedIconGrid
+              icons={filteredIcons}
               onIconClick={handleIconClick}
-              onLoadMore={loadMore}
-              hasMore={hasMore}
-              isLoadingMore={isLoadingMore}
             />
           )}
         </div>

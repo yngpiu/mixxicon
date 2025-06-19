@@ -10,7 +10,8 @@ body {
   background-color: #f8fafc;
   color: #2d3748;
   line-height: 1.6;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden; /* Prevent body scroll */
 }
 
 .app {
@@ -158,6 +159,20 @@ body {
   min-height: 1em;
 }
 
+/* Virtual Container */
+.virtual-container {
+  width: 100%;
+  height: calc(100vh - 200px); /* Full viewport minus header height */
+  overflow: auto;
+}
+
+.virtual-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+}
+
 /* Icons Grid */
 .icons-container {
   display: grid;
@@ -177,6 +192,8 @@ body {
   align-items: center;
   gap: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 140px;
+  flex-shrink: 0;
 }
 
 .icon-item:hover {
@@ -495,30 +512,6 @@ body {
   .icon-label {
     font-size: 0.75rem;
   }
-}
-
-/* Loading more */
-.load-more-trigger {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem 2rem;
-  min-height: 120px;
-}
-
-.loading-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.loading-more p {
-  color: #4a5568;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin: 0;
 }
 
 /* Loading animation */
