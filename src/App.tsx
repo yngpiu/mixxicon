@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import Fuse from 'fuse.js';
 import { useDebounce } from 'use-debounce';
 import './App.css';
@@ -94,10 +94,42 @@ function IconCard({ icon, onClick }: { icon: Icon; onClick: () => void }) {
 const IconGrid = memo(function IconGrid({
   icons,
   onIconClick,
+  onLoadMore,
+  hasMore,
+  isLoadingMore,
 }: {
   icons: Icon[];
   onIconClick: (icon: Icon) => void;
+  onLoadMore: () => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
 }) {
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!hasMore || isLoadingMore) return;
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, isLoadingMore, onLoadMore]);
+
   if (icons.length === 0) {
     return (
       <div className="empty-state">
@@ -115,12 +147,22 @@ const IconGrid = memo(function IconGrid({
           onClick={() => onIconClick(icon)}
         />
       ))}
+      {hasMore && (
+        <div ref={loadMoreRef} className="load-more-trigger">
+          {isLoadingMore && (
+            <div className="loading-more">
+              <p>Loading more icons...</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 });
 
 function App() {
   const [allIcons, setAllIcons] = useState<Icon[]>([]);
+  const [displayedIcons, setDisplayedIcons] = useState<Icon[]>([]);
   const [collections, setCollections] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [query] = useDebounce(text, 300);
@@ -128,6 +170,10 @@ function App() {
   const [selectedStyle, setSelectedStyle] = useState('all');
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const ITEMS_PER_PAGE = 50;
 
   useEffect(() => {
     fetch('/icons/manifest.json')
@@ -135,7 +181,7 @@ function App() {
       .then(manifest => {
         setCollections(manifest.collections);
         if (manifest.collections.length > 0) {
-          setSelectedCollection(manifest.collections[0]); // Select the first collection by default
+          setSelectedCollection(manifest.collections[0]);
         }
       });
   }, []);
@@ -144,6 +190,9 @@ function App() {
     if (!selectedCollection) return;
 
     setIsLoading(true);
+    setCurrentPage(0);
+    setDisplayedIcons([]);
+
     fetch(`/icons/${selectedCollection}.json`)
       .then(res => res.json())
       .then(data => {
@@ -172,6 +221,34 @@ function App() {
     return results;
   }, [query, allIcons, selectedStyle]);
 
+  // Reset displayed icons when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+    setDisplayedIcons(filteredIcons.slice(0, ITEMS_PER_PAGE));
+  }, [filteredIcons]);
+
+  const loadMore = useCallback(() => {
+    if (isLoadingMore) return;
+
+    setIsLoadingMore(true);
+
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const startIndex = nextPage * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const newIcons = filteredIcons.slice(startIndex, endIndex);
+
+      setDisplayedIcons(prev => [...prev, ...newIcons]);
+      setCurrentPage(nextPage);
+      setIsLoadingMore(false);
+    }, 300);
+  }, [currentPage, filteredIcons, isLoadingMore]);
+
+  const hasMore = useMemo(() => {
+    return displayedIcons.length < filteredIcons.length;
+  }, [displayedIcons.length, filteredIcons.length]);
+
   const handleIconClick = useCallback((icon: Icon) => {
     setSelectedIcon(icon);
   }, []);
@@ -180,6 +257,10 @@ function App() {
     setSelectedCollection(collection);
     setSelectedStyle('all');
     setText('');
+  };
+
+  const handleStyleChange = (style: string) => {
+    setSelectedStyle(style);
   };
 
   return (
@@ -216,7 +297,7 @@ function App() {
                 <button
                   key={style}
                   className={selectedStyle === style ? 'active' : ''}
-                  onClick={() => setSelectedStyle(style)}
+                  onClick={() => handleStyleChange(style)}
                   disabled={isLoading}
                 >
                   {style}
@@ -233,7 +314,10 @@ function App() {
             {isLoading ? (
               <span>Loading...</span>
             ) : (
-              <span>{filteredIcons.length} icons</span>
+              <span>
+                Showing {displayedIcons.length} of {filteredIcons.length} icons
+                {hasMore && ' (scroll down for more)'}
+              </span>
             )}
           </div>
           {isLoading ? (
@@ -241,7 +325,13 @@ function App() {
               <p>Loading icons...</p>
             </div>
           ) : (
-            <IconGrid icons={filteredIcons} onIconClick={handleIconClick} />
+            <IconGrid
+              icons={displayedIcons}
+              onIconClick={handleIconClick}
+              onLoadMore={loadMore}
+              hasMore={hasMore}
+              isLoadingMore={isLoadingMore}
+            />
           )}
         </div>
       </main>
