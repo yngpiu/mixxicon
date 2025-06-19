@@ -1,8 +1,8 @@
-# SVG Icon Browser
+# Mixxicon
 
 A modern, fast, and responsive web application for browsing, searching, and managing large collections of SVG icons. Built with React, TypeScript, and Vite.
 
-![Icon Browser Screenshot](screenshot.png)
+![Mixxicon Screenshot](screenshot.png)
 
 ## ✨ Features
 
@@ -17,7 +17,7 @@ A modern, fast, and responsive web application for browsing, searching, and mana
 
 ## 🚀 Demo
 
-[Live Demo](your-demo-url-here) | [Video Demo](your-video-url-here)
+[Live Demo](https://mixxicon.netlify.app/)
 
 ## 📁 Supported Icon Collections
 
@@ -37,8 +37,8 @@ A modern, fast, and responsive web application for browsing, searching, and mana
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/svg-icon-browser.git
-   cd svg-icon-browser
+   git clone https://github.com/yourusername/mixxicon.git
+   cd mixxicon
    ```
 
 2. **Install dependencies**
@@ -85,16 +85,14 @@ A modern, fast, and responsive web application for browsing, searching, and mana
 ```
 ├── src/
 │   ├── components/           # React components
-│   │   ├── IconBrowser.tsx   # Main browser component
+│   │   ├── Header.tsx        # Header component
 │   │   ├── IconGrid.tsx      # Virtualized icon grid
 │   │   ├── IconModal.tsx     # Icon detail modal
-│   │   └── Sidebar.tsx       # Filter sidebar
 │   ├── assets/icons/         # Your SVG icon collections
 │   ├── lib/                  # Utilities and types
-│   └── data/                 # Generated icon data
 ├── scripts/
 │   └── build-icons.mjs       # Icon indexing script
-└── public/                   # Static assets
+└── public/                   # Generated icon data and static assets
 ```
 
 ## 🔧 Configuration
@@ -137,27 +135,6 @@ pnpm preview
 - 💨 Virtualized rendering for optimal performance
 - 🔍 Sub-100ms search response times
 
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Add tests if applicable
-5. Commit your changes: `git commit -m 'Add amazing feature'`
-6. Push to the branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
-
-### Code Style
-
-- Use TypeScript for type safety
-- Follow React best practices
-- Use meaningful component and variable names
-- Add comments for complex logic
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -172,9 +149,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report a Bug](https://github.com/yourusername/svg-icon-browser/issues)
-- 💡 [Request a Feature](https://github.com/yourusername/svg-icon-browser/issues)
-- 💬 [Discussions](https://github.com/yourusername/svg-icon-browser/discussions)
+- 🐛 [Report a Bug](https://github.com/yourusername/mixxicon/issues)
+- 💡 [Request a Feature](https://github.com/yourusername/mixxicon/issues)
+- 💬 [Discussions](https://github.com/yourusername/mixxicon/discussions)
 
 ## 📈 Roadmap
 
@@ -187,4 +164,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by Yngpiu

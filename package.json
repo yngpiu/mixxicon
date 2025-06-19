@@ -1,5 +1,5 @@
 {
-  "name": "svg-icon-browser",
+  "name": "mixxicon",
   "private": false,
   "version": "1.0.0",
   "type": "module",
@@ -18,12 +18,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/svg-icon-browser.git"
+    "url": "https://github.com/yourusername/mixxicon.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/svg-icon-browser/issues"
+    "url": "https://github.com/yourusername/mixxicon/issues"
   },
-  "homepage": "https://github.com/yourusername/svg-icon-browser#readme",
+  "homepage": "https://mixxicon.netlify.app",
   "scripts": {
     "dev": "pnpm build:icons && vite",
     "build": "pnpm build:icons && tsc -b && vite build",
