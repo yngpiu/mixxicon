@@ -14,42 +14,76 @@ export function IconDetailModal({
   const [copyStatus, setCopyStatus] = useState<'Copy SVG' | 'Copied!'>(
     'Copy SVG'
   );
-  const [color, setColor] = useState('#000000');
-  const [size, setSize] = useState(80);
+  const [color, setColor] = useState<string | null>('#000000');
+  const [size, setSize] = useState<number | null>(80);
+  const [isColorChangeable, setIsColorChangeable] = useState(false);
   const [isSizeSelectorOpen, setSizeSelectorOpen] = useState(false);
   const [isColorPickerOpen, setColorPickerOpen] = useState(false);
 
   const sizeSelectorRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (icon.content) {
+      const fillCount = (icon.content.match(/fill="/g) || []).length;
+      const isChangeable = fillCount <= 1;
+      setIsColorChangeable(isChangeable);
+      if (!isChangeable) {
+        setColor('#000000');
+      }
+    }
+  }, [icon.content]);
+
   const modifiedSvg = useMemo(() => {
     if (!icon.content) return '';
     let svgString = icon.content;
+    const fillCount = (icon.content.match(/fill="/g) || []).length;
+
+    if (isColorChangeable && fillCount === 1) {
+      const fillValue = color === null ? 'currentColor' : color;
+      svgString = svgString.replace(/fill="[^"]*"/, `fill="${fillValue}"`);
+    }
 
     const svgTagRegex = /<svg[^>]*>/;
     const svgTagMatch = svgString.match(svgTagRegex);
 
     if (svgTagMatch) {
       let svgTag = svgTagMatch[0];
+      const attrsToSet: { [key: string]: string | number } = {};
 
-      const attributes = {
-        width: size,
-        height: size,
-        fill: color,
-      };
+      if (size !== null) {
+        attrsToSet.width = size;
+        attrsToSet.height = size;
+      }
 
-      for (const [attr, value] of Object.entries(attributes)) {
-        const attrRegex = new RegExp(`${attr}="[^"]*"`);
-        if (attrRegex.test(svgTag)) {
-          svgTag = svgTag.replace(attrRegex, `${attr}="${value}"`);
+      if (isColorChangeable && fillCount === 0) {
+        attrsToSet.fill = color === null ? 'currentColor' : color;
+      }
+
+      svgTag = svgTag
+        .replace(/ width="[^"]*"/, '')
+        .replace(/ height="[^"]*"/, '');
+      if (attrsToSet.fill) {
+        svgTag = svgTag.replace(/ fill="[^"]*"/, '');
+      }
+
+      const attrsString = Object.entries(attrsToSet)
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(' ');
+
+      if (attrsString) {
+        if (svgTag.endsWith('/>')) {
+          svgTag = svgTag.slice(0, -2) + ' ' + attrsString + ' />';
         } else {
-          svgTag = svgTag.replace('>', ` ${attr}="${value}">`);
+          svgTag = svgTag.slice(0, -1) + ' ' + attrsString + '>';
         }
       }
+
       svgString = svgString.replace(svgTagRegex, svgTag);
     }
+
     return svgString;
-  }, [icon.content, size, color]);
+  }, [icon.content, size, color, isColorChangeable]);
 
   const handleCopySvg = useCallback(() => {
     navigator.clipboard.writeText(modifiedSvg);
@@ -109,32 +143,56 @@ export function IconDetailModal({
         <div className="modal-preview">
           <div
             className="icon-large"
-            style={{ width: size, height: size }}
+            style={{ width: size ?? 128, height: size ?? 128 }}
             dangerouslySetInnerHTML={{ __html: modifiedSvg }}
           />
         </div>
         <div className="modal-controls">
-          <div className="control-group" ref={colorPickerRef}>
-            <button
-              className="color-swatch"
-              onClick={() => setColorPickerOpen(!isColorPickerOpen)}
-              style={{ backgroundColor: color }}
-            ></button>
-            {isColorPickerOpen && (
-              <div className="color-picker-popover">
-                <HexColorPicker color={color} onChange={setColor} />
-              </div>
-            )}
-          </div>
+          {isColorChangeable && (
+            <div className="control-group" ref={colorPickerRef}>
+              <button
+                className="color-swatch"
+                onClick={() => setColorPickerOpen(!isColorPickerOpen)}
+                style={{
+                  backgroundColor: color ?? '#fff',
+                  border:
+                    color === null ? '1px dashed #999' : `1px solid ${color}`,
+                }}
+              ></button>
+              <button
+                onClick={() => setColor(null)}
+                className="btn-clear-color"
+              >
+                Default
+              </button>
+              {isColorPickerOpen && (
+                <div className="color-picker-popover">
+                  <HexColorPicker
+                    color={color ?? '#000000'}
+                    onChange={setColor}
+                  />
+                </div>
+              )}
+            </div>
+          )}
           <div className="control-group" ref={sizeSelectorRef}>
             <button
               className="size-btn"
               onClick={() => setSizeSelectorOpen(!isSizeSelectorOpen)}
             >
-              Size: {size}px
+              Size: {size !== null ? `${size}px` : 'Default'}
             </button>
             {isSizeSelectorOpen && (
               <div className="size-selector">
+                <div
+                  className="size-option"
+                  onClick={() => {
+                    setSize(null);
+                    setSizeSelectorOpen(false);
+                  }}
+                >
+                  Default
+                </div>
                 {SIZES.map(s => (
                   <div
                     key={s}

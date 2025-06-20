@@ -346,6 +346,11 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 0.75rem;
+}
+
+.control-group label {
+  cursor: pointer;
 }
 
 .color-swatch {
@@ -353,6 +358,20 @@ body {
   height: 40px;
   border: 1px solid #000000;
   cursor: pointer;
+}
+
+.btn-clear-color {
+  background: none;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0;
+}
+
+.btn-clear-color:hover {
+  color: #000;
 }
 
 .color-picker-popover {
