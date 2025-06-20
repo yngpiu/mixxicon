@@ -52,7 +52,7 @@ export function AppHeader({
               <input
                 type="text"
                 value={text}
-                onChange={e => setText(e.target.value)}
+                onChange={(e) => setText(e.target.value)}
                 placeholder={`Search in ${formatCollectionName(
                   selectedCollection
                 )}...`}
@@ -87,11 +87,22 @@ export function AppHeader({
                 }
                 disabled={collections.length === 0}
               >
-                {formatCollectionName(selectedCollection)}
+                <span>{formatCollectionName(selectedCollection)}</span>
+                <svg
+                  width="25"
+                  height="25"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className={`dropdown-arrow ${
+                    isCollectionSelectorOpen ? 'open' : ''
+                  }`}
+                >
+                  <path d="M7 10l5 5 5-5z" />
+                </svg>
               </button>
               {isCollectionSelectorOpen && (
                 <div className="collection-selector">
-                  {collections.map(c => (
+                  {collections.map((c) => (
                     <div
                       key={c}
                       className="collection-option"
@@ -111,7 +122,7 @@ export function AppHeader({
 
         <div className="style-row">
           <div className="style-filter">
-            {styles.map(style => (
+            {styles.map((style) => (
               <button
                 key={style}
                 className={selectedStyle === style ? 'active' : ''}

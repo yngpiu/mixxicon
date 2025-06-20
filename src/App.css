@@ -123,6 +123,15 @@ body {
   cursor: not-allowed;
 }
 
+.dropdown-arrow {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
 .collection-selector {
   position: absolute;
   top: 100%;
