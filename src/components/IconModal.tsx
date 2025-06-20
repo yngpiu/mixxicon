@@ -4,6 +4,15 @@ import type { Icon } from '../lib/types';
 
 const SIZES = [16, 24, 32, 48, 64, 80, 128];
 
+function getContrastColor(hex: string) {
+  if (!hex) return '#000000';
+  const r = parseInt(hex.substring(1, 3), 16);
+  const g = parseInt(hex.substring(3, 5), 16);
+  const b = parseInt(hex.substring(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? '#000000' : '#ffffff';
+}
+
 export function IconDetailModal({
   icon,
   onClose,
@@ -128,6 +137,14 @@ export function IconDetailModal({
     };
   }, [onClose]);
 
+  const colorBtnStyle = color
+    ? {
+        backgroundColor: color,
+        color: getContrastColor(color),
+        borderColor: color,
+      }
+    : {};
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -150,6 +167,7 @@ export function IconDetailModal({
               <button
                 className="size-btn"
                 onClick={() => setColorPickerOpen(!isColorPickerOpen)}
+                style={colorBtnStyle}
               >
                 {color ? color.toUpperCase() : 'NO COLOR'}
               </button>
