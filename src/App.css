@@ -330,7 +330,72 @@ body {
 .icon-large svg {
   width: 100%;
   height: 100%;
-  color: #000000;
+}
+
+.modal-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #000000;
+}
+
+.control-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #000000;
+  cursor: pointer;
+}
+
+.color-picker-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1010;
+  margin-bottom: 0.5rem;
+}
+
+.size-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #000000;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.size-selector {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #000000;
+  z-index: 1010;
+  margin-bottom: 0.5rem;
+  width: 150px;
+}
+
+.size-option {
+  padding: 0.75rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.size-option:hover {
+  background: #f0f0f0;
+}
+
+.size-option:not(:last-child) {
+  border-bottom: 1px solid #000000;
 }
 
 .modal-actions {
