@@ -353,13 +353,6 @@ body {
   cursor: pointer;
 }
 
-.color-swatch {
-  width: 100%;
-  height: 32px;
-  border: 1px solid #000000;
-  cursor: pointer;
-}
-
 .color-picker-popover {
   position: absolute;
   bottom: 100%;

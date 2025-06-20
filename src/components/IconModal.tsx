@@ -15,7 +15,7 @@ export function IconDetailModal({
     'Copy SVG'
   );
   const [color, setColor] = useState<string | null>(null);
-  const [size, setSize] = useState<number | null>(80);
+  const [size, setSize] = useState<number | null>(null);
   const [isColorChangeable, setIsColorChangeable] = useState(false);
   const [isSizeSelectorOpen, setSizeSelectorOpen] = useState(false);
   const [isColorPickerOpen, setColorPickerOpen] = useState(false);
@@ -25,9 +25,9 @@ export function IconDetailModal({
 
   useEffect(() => {
     if (icon.content) {
-      const fillCount = (icon.content.match(/fill="/g) || []).length;
-      setIsColorChangeable(fillCount <= 1);
+      setIsColorChangeable((icon.content.match(/fill="/g) || []).length <= 1);
       setColor(null);
+      setSize(null);
     }
   }, [icon.content]);
 
@@ -148,14 +148,11 @@ export function IconDetailModal({
           {isColorChangeable && (
             <div className="control-group" ref={colorPickerRef}>
               <button
-                className="color-swatch"
+                className="size-btn"
                 onClick={() => setColorPickerOpen(!isColorPickerOpen)}
-                style={{
-                  backgroundColor: color ?? '#fff',
-                  border:
-                    color === null ? '1px dashed #999' : `1px solid ${color}`,
-                }}
-              ></button>
+              >
+                {color ? color.toUpperCase() : 'NO COLOR'}
+              </button>
               {isColorPickerOpen && (
                 <div className="color-picker-popover">
                   <HexColorPicker
@@ -171,7 +168,7 @@ export function IconDetailModal({
               className="size-btn"
               onClick={() => setSizeSelectorOpen(!isSizeSelectorOpen)}
             >
-              Size: {size !== null ? `${size}px` : 'Default'}
+              {size !== null ? `${size}px` : 'NO SIZE'}
             </button>
             {isSizeSelectorOpen && (
               <div className="size-selector">
@@ -182,7 +179,7 @@ export function IconDetailModal({
                     setSizeSelectorOpen(false);
                   }}
                 >
-                  Default
+                  NO SIZE
                 </div>
                 {SIZES.map(s => (
                   <div
