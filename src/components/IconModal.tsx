@@ -34,7 +34,9 @@ export function IconDetailModal({
 
   useEffect(() => {
     if (icon.content) {
-      setIsColorChangeable((icon.content.match(/fill="/g) || []).length <= 1);
+      const fillCount = (icon.content.match(/fill="/g) || []).length;
+      const hasStroke = (icon.content.match(/stroke="/g) || []).length > 0;
+      setIsColorChangeable(fillCount <= 1 && !hasStroke);
       setColor(null);
       setSize(null);
     }
