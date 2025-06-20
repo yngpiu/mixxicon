@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from 'react';
+
 interface AppHeaderProps {
   collections: string[];
   selectedCollection: string;
@@ -23,6 +25,24 @@ export function AppHeader({
   handleStyleChange,
   formatCollectionName,
 }: AppHeaderProps) {
+  const [isCollectionSelectorOpen, setCollectionSelectorOpen] = useState(false);
+  const collectionSelectorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        collectionSelectorRef.current &&
+        !collectionSelectorRef.current.contains(event.target as Node)
+      ) {
+        setCollectionSelectorOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <header className="header">
       <div className="header-content">
@@ -59,18 +79,32 @@ export function AppHeader({
           </div>
 
           <div className="collection-section">
-            <div className="collection-filter">
-              <select
-                onChange={e => handleCollectionChange(e.target.value)}
-                value={selectedCollection}
+            <div className="collection-filter" ref={collectionSelectorRef}>
+              <button
+                className="collection-btn"
+                onClick={() =>
+                  setCollectionSelectorOpen(!isCollectionSelectorOpen)
+                }
                 disabled={collections.length === 0}
               >
-                {collections.map(c => (
-                  <option key={c} value={c}>
-                    {formatCollectionName(c)}
-                  </option>
-                ))}
-              </select>
+                {formatCollectionName(selectedCollection)}
+              </button>
+              {isCollectionSelectorOpen && (
+                <div className="collection-selector">
+                  {collections.map(c => (
+                    <div
+                      key={c}
+                      className="collection-option"
+                      onClick={() => {
+                        handleCollectionChange(c);
+                        setCollectionSelectorOpen(false);
+                      }}
+                    >
+                      {formatCollectionName(c)}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

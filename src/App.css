@@ -97,14 +97,14 @@ body {
 /* Collection Filter */
 .collection-filter {
   width: 100%;
+  position: relative;
 }
 
-.collection-filter select {
+.collection-btn {
   width: 100%;
-  padding: 0.75rem 0;
-  border: none;
-  border-bottom: 2px solid #000000;
-  background: transparent;
+  padding: 0.75rem;
+  border: 1px solid #000000;
+  background: #ffffff;
   color: #000000;
   font-size: 1rem;
   cursor: pointer;
@@ -112,6 +112,43 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 500;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collection-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.collection-selector {
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #000000;
+  z-index: 1010;
+  margin-top: 0.25rem;
+}
+
+.collection-option {
+  padding: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.collection-option:hover {
+  background: #f0f0f0;
+}
+
+.collection-option:not(:last-child) {
+  border-bottom: 1px solid #000000;
 }
 
 /* Style Filter */
