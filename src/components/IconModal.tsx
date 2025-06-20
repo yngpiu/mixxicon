@@ -28,6 +28,7 @@ export function IconDetailModal({
   const [isColorChangeable, setIsColorChangeable] = useState(false);
   const [isSizeSelectorOpen, setSizeSelectorOpen] = useState(false);
   const [isColorPickerOpen, setColorPickerOpen] = useState(false);
+  const [hexInput, setHexInput] = useState('');
 
   const sizeSelectorRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -39,8 +40,32 @@ export function IconDetailModal({
       setIsColorChangeable(fillCount <= 1 && !hasStroke);
       setColor(null);
       setSize(null);
+      setHexInput('');
     }
   }, [icon.content]);
+
+  // Update hex input when color changes
+  useEffect(() => {
+    if (color) {
+      setHexInput(color);
+    } else {
+      setHexInput('');
+    }
+  }, [color]);
+
+  const handleHexInputChange = (value: string) => {
+    setHexInput(value);
+    // Validate hex color
+    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    if (hexRegex.test(value)) {
+      setColor(value);
+    }
+  };
+
+  const handleColorChange = (newColor: string) => {
+    setColor(newColor);
+    setHexInput(newColor);
+  };
 
   const modifiedSvg = useMemo(() => {
     if (!icon.content) return '';
@@ -149,7 +174,7 @@ export function IconDetailModal({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{icon.name}</h3>
           <button onClick={onClose} className="close-btn">
@@ -177,8 +202,19 @@ export function IconDetailModal({
                 <div className="color-picker-popover">
                   <HexColorPicker
                     color={color ?? '#000000'}
-                    onChange={setColor}
+                    onChange={handleColorChange}
                   />
+                  <div className="hex-input-wrapper">
+                    <label htmlFor="hex-input">Hex:</label>
+                    <input
+                      id="hex-input"
+                      type="text"
+                      value={hexInput}
+                      onChange={(e) => handleHexInputChange(e.target.value)}
+                      placeholder="#000000"
+                      className="hex-input"
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -201,7 +237,7 @@ export function IconDetailModal({
                 >
                   NO SIZE
                 </div>
-                {SIZES.map(s => (
+                {SIZES.map((s) => (
                   <div
                     key={s}
                     className="size-option"
