@@ -25,8 +25,8 @@
   },
   "homepage": "https://mixxicon.netlify.app",
   "scripts": {
-    "dev": "pnpm build:icons && vite",
-    "build": "pnpm build:icons && tsc -b && vite build",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
     "build:icons": "node scripts/build-icons.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
