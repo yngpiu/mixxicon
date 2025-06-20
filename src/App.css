@@ -70,8 +70,28 @@ body {
   color: #666666;
 }
 
-.search-input:focus {
-  border-bottom: 3px solid #000000;
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #666666;
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+.clear-search-btn:hover {
+  color: #000000;
 }
 
 /* Collection Filter */
@@ -83,7 +103,7 @@ body {
   width: 100%;
   padding: 0.75rem 0;
   border: none;
-  border-bottom: 1px solid #000000;
+  border-bottom: 2px solid #000000;
   background: transparent;
   color: #000000;
   font-size: 1rem;
