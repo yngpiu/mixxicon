@@ -14,7 +14,7 @@ export function IconDetailModal({
   const [copyStatus, setCopyStatus] = useState<'Copy SVG' | 'Copied!'>(
     'Copy SVG'
   );
-  const [color, setColor] = useState<string | null>('#000000');
+  const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<number | null>(80);
   const [isColorChangeable, setIsColorChangeable] = useState(false);
   const [isSizeSelectorOpen, setSizeSelectorOpen] = useState(false);
@@ -26,11 +26,8 @@ export function IconDetailModal({
   useEffect(() => {
     if (icon.content) {
       const fillCount = (icon.content.match(/fill="/g) || []).length;
-      const isChangeable = fillCount <= 1;
-      setIsColorChangeable(isChangeable);
-      if (!isChangeable) {
-        setColor('#000000');
-      }
+      setIsColorChangeable(fillCount <= 1);
+      setColor(null);
     }
   }, [icon.content]);
 
@@ -159,12 +156,6 @@ export function IconDetailModal({
                     color === null ? '1px dashed #999' : `1px solid ${color}`,
                 }}
               ></button>
-              <button
-                onClick={() => setColor(null)}
-                className="btn-clear-color"
-              >
-                Default
-              </button>
               {isColorPickerOpen && (
                 <div className="color-picker-popover">
                   <HexColorPicker

@@ -360,20 +360,6 @@ body {
   cursor: pointer;
 }
 
-.btn-clear-color {
-  background: none;
-  border: none;
-  color: #666;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 0.875rem;
-  padding: 0;
-}
-
-.btn-clear-color:hover {
-  color: #000;
-}
-
 .color-picker-popover {
   position: absolute;
   bottom: 100%;
@@ -389,6 +375,7 @@ body {
   background: #ffffff;
   cursor: pointer;
   font-size: 1rem;
+  color: #000000;
 }
 
 .size-selector {
