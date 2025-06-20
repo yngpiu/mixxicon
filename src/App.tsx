@@ -75,7 +75,6 @@ function App() {
   const handleCollectionChange = (collection: string) => {
     setSelectedCollection(collection);
     setSelectedStyle('all');
-    setText('');
   };
 
   const handleStyleChange = (style: string) => {
