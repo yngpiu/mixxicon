@@ -17,11 +17,13 @@ function IconCard({ icon, onClick }: { icon: Icon; onClick: () => void }) {
 interface IconGridProps {
   icons: Icon[];
   onIconClick: (icon: Icon) => void;
+  isLoading: boolean;
 }
 
 export const IconGrid = memo(function VirtualizedIconGrid({
   icons,
   onIconClick,
+  isLoading,
 }: IconGridProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +53,14 @@ export const IconGrid = memo(function VirtualizedIconGrid({
     estimateSize: () => ESTIMATED_ITEM_SIZE,
     overscan: 5, // Render 5 extra rows for smooth scrolling
   });
+
+  if (isLoading) {
+    return (
+      <div className="empty-state">
+        <p>Loading icons...</p>
+      </div>
+    );
+  }
 
   if (icons.length === 0) {
     return (

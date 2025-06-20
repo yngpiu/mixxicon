@@ -98,7 +98,11 @@ function App() {
       <main className="main">
         <div className="content">
           <div className="results-info">{filteredIcons.length} Icons</div>
-          <IconGrid icons={filteredIcons} onIconClick={handleIconClick} />
+          <IconGrid
+            icons={filteredIcons}
+            onIconClick={handleIconClick}
+            isLoading={isLoading}
+          />
         </div>
       </main>
 
